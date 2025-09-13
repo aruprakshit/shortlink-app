@@ -1,0 +1,115 @@
+# Guide: Deploying the ShortLink Application to Minikube
+
+This guide provides all the steps needed to deploy the ShortLink application from scratch to a local Minikube Kubernetes cluster.
+
+## Prerequisites
+
+Before you begin, make sure you have the following tools installed:
+- Docker
+- Minikube
+- kubectl (Kubernetes command-line tool)
+- Node.js and npm
+
+## Step 1: Start Your Minikube Cluster
+
+Every time you want to run the application, you must first start your local Kubernetes cluster.
+
+```bash
+minikube start
+```
+
+## Step 2: Install Project Dependencies
+
+Navigate to the project's root directory and install the necessary Node.js dependencies for both the backend and frontend services.
+
+```bash
+# Install backend dependencies
+npm install --prefix backend
+
+# Install frontend dependencies
+npm install --prefix frontend
+```
+
+## Step 3: Build Docker Images Inside Minikube
+
+To use local Docker images, you must build them within Minikube's internal Docker environment.
+
+1.  **Connect your terminal to Minikube's Docker daemon:**
+    (Run this command in the terminal you will use for the next steps)
+    ```bash
+    eval $(minikube -p minikube docker-env)
+    ```
+
+2.  **Build the images:**
+    ```bash
+    # Build the backend image
+    docker build -t shortlink-backend:latest ./backend
+
+    # Build the frontend image
+    docker build -t shortlink-frontend:latest ./frontend
+    ```
+
+## Step 4: Enable the Minikube Ingress Controller
+
+The Ingress controller is required to manage external access to the application.
+
+```bash
+minikube addons enable ingress
+```
+
+## Step 5: Deploy the Application to Kubernetes
+
+Apply all the Kubernetes manifest files located in the `kubernetes` directory. The order is important.
+
+```bash
+# 1. Create the namespace
+kubectl apply -f kubernetes/namespace.yaml
+
+# 2. Deploy the database components
+kubectl apply -f kubernetes/postgres-secret.yaml
+kubectl apply -f kubernetes/postgres-pvc.yaml
+kubectl apply -f kubernetes/postgres-deployment.yaml
+kubectl apply -f kubernetes/postgres-service.yaml
+
+# 3. Deploy the backend API
+kubectl apply -f kubernetes/backend-deployment.yaml
+kubectl apply -f kubernetes/backend-service.yaml
+
+# 4. Deploy the frontend UI and expose the application
+kubectl apply -f kubernetes/frontend-deployment.yaml
+kubectl apply -f kubernetes/frontend-service.yaml
+kubectl apply -f kubernetes/ingress.yaml
+```
+
+## Step 6: Access the Application in Your Browser
+
+1.  **Get your Minikube cluster's IP address:**
+    ```bash
+    minikube ip
+    ```
+
+2.  **Map the IP to the hostname:**
+    Take the IP address from the previous command and add it to your local `hosts` file.
+    - On Linux/macOS: `sudo nano /etc/hosts`
+    - On Windows: Edit `C:\Windows\System32\drivers\etc\hosts` as an Administrator
+
+    Add the following line (replace `MINIKUBE_IP` with your actual IP):
+    ```
+    MINIKUBE_IP shortlink.local
+    ```
+
+3.  **Open the application:**
+    You can now access the application by navigating to the following URL in your web browser:
+    **http://shortlink.local**
+
+## Cleanup (Optional)
+
+To stop the application and shut down the cluster, you can run:
+```bash
+minikube stop
+```
+
+To delete all the deployed resources from the cluster:
+```bash
+kubectl delete namespace shortlink
+```
