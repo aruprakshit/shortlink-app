@@ -1,0 +1,22 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: frontend-deployment
+  namespace: shortlink
+spec:
+  replicas: 2 # Run two pods for availability
+  selector:
+    matchLabels:
+      app: frontend
+  template:
+    metadata:
+      labels:
+        app: frontend
+    spec:
+      containers:
+      - name: frontend
+        # IMPORTANT: Replace this with your actual image name before deploying
+        image: shortlink-frontend:latest
+        imagePullPolicy: IfNotPresent # Use a local image if available
+        ports:
+        - containerPort: 80
