@@ -74,3 +74,27 @@ Here's a quick recap of what we've created in the kubernetes directory:
 
   This tutorial has covered the core concepts of Kubernetes in a practical, hands-on way. You've learned how to manage stateless and stateful applications, handle configuration and secrets, manage storage, and
   expose your application to the world.
+
+# Test port forwarding (recommended for WSL)
+kubectl port-forward -n shortlink svc/frontend-service 3000:80 &
+kubectl port-forward -n shortlink svc/backend-service 3001:80 &
+
+# Test from inside cluster
+kubectl exec -n shortlink <pod-name> -- curl -s http://localhost:80
+
+# Test network connectivity
+ping -c 3 192.168.49.2  # This will fail in WSL, that's normal
+
+----
+ Now, please follow this exact sequence:
+
+1. Ensure the images are loaded into Minikube (run these again to be safe):
+
+1     minikube image load shortlink-backend:latest
+2     minikube image load shortlink-frontend:latest
+2. Apply the updated YAML files:
+1     kubectl apply -f kubernetes/
+3. Restart the deployments one more time:
+
+1     kubectl rollout restart deployment backend-deployment -n shortlink
+2     kubectl rollout restart deployment frontend-deployment -n shortlink

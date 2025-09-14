@@ -51,7 +51,7 @@ function generateShortCode(length = 6) {
 }
 
 // Endpoint to create a new short link
-app.post('/api/links', async (req, res) => {
+app.post('/links', async (req, res) => {
   const { long_url } = req.body;
   if (!long_url) {
     return res.status(400).json({ error: 'long_url is required' });
@@ -73,7 +73,7 @@ app.post('/api/links', async (req, res) => {
 });
 
 // Endpoint to get all links (for debugging/demo)
-app.get('/api/links', async (req, res) => {
+app.get('/links', async (req, res) => {
   try {
     const result = await pool.query('SELECT * FROM links ORDER BY id DESC');
     res.status(200).json(result.rows);
