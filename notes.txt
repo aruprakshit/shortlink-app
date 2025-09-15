@@ -76,8 +76,7 @@ Here's a quick recap of what we've created in the kubernetes directory:
   expose your application to the world.
 
 # Test port forwarding (recommended for WSL)
-kubectl port-forward -n shortlink svc/frontend-service 3000:80 &
-kubectl port-forward -n shortlink svc/backend-service 3001:80 &
+kubectl port-forward -n ingress-nginx svc/ingress-nginx-controller 8080:80 &
 
 # Test from inside cluster
 kubectl exec -n shortlink <pod-name> -- curl -s http://localhost:80

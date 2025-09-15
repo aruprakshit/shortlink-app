@@ -1,9 +1,32 @@
+# Ingress for the Frontend (no rewrite)
 apiVersion: networking.k8s.io/v1
 kind: Ingress
 metadata:
-  name: shortlink-ingress
+  name: shortlink-ingress-frontend
+  namespace: shortlink
+spec:
+  rules:
+  - http:
+      paths:
+      - path: /
+        pathType: Prefix
+        backend:
+          service:
+            name: frontend-service
+            port:
+              number: 80
+
+---
+
+# Ingress for the Backend (with rewrite)
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: shortlink-ingress-backend
   namespace: shortlink
   annotations:
+    # This rewrite rule strips /api from the request path
+    # e.g., /api/users becomes /users
     nginx.ingress.kubernetes.io/rewrite-target: /$2
 spec:
   rules:
@@ -14,12 +37,5 @@ spec:
         backend:
           service:
             name: backend-service
-            port:
-              number: 80
-      - path: /
-        pathType: Prefix
-        backend:
-          service:
-            name: frontend-service
             port:
               number: 80
