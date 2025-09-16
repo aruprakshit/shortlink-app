@@ -43,10 +43,10 @@ To use local Docker images, you must build them within Minikube's internal Docke
 2.  **Build the images:**
     ```bash
     # Build the backend image
-    docker build -t shortlink-backend:latest ./backend
+    docker build --no-cache -t shortlink-backend:latest ./backend
 
     # Build the frontend image
-    docker build -t shortlink-frontend:latest ./frontend
+    docker build --no-cache -t shortlink-frontend:latest ./frontend
     ```
 
 ## Step 4: Enable the Minikube Ingress Controller

@@ -97,3 +97,16 @@ ping -c 3 192.168.49.2  # This will fail in WSL, that's normal
 
 1     kubectl rollout restart deployment backend-deployment -n shortlink
 2     kubectl rollout restart deployment frontend-deployment -n shortlink
+
+--
+check logs
+
+kubectl logs -n shortlink -l app=frontend
+kubectl logs -n shortlink -l app=backend
+
+---
+port forwarding
+
+kubectl get pods -n ingress-nginx
+kubectl port-forward --namespace ingress-nginx ingress-nginx-controller-9cc49f96f-shsvf 8080:80
+kubectl logs -f ingress-nginx-controller-9cc49f96f-shsvf -n ingress-nginx
