@@ -110,3 +110,22 @@ port forwarding
 kubectl get pods -n ingress-nginx
 kubectl port-forward --namespace ingress-nginx ingress-nginx-controller-9cc49f96f-shsvf 8080:80
 kubectl logs -f ingress-nginx-controller-9cc49f96f-shsvf -n ingress-nginx
+
+---
+ Your New Workflow
+
+  Here are your steps going forward:
+
+   1. In your terminal, set the Docker environment:
+   1     eval $(minikube docker-env)
+   2. Rebuild your images whenever you make a code change. They will be built directly inside Minikube.
+
+   1     docker build -t shortlink-frontend:latest ./frontend
+   2     docker build -t shortlink-backend:latest ./backend
+   3. Run your deployment script:
+
+   1     ./deploy.sh
+
+  The deployment will now pick up your newly built local images, and everything should work as expected.
+
+  (Note: To revert your terminal to the host's Docker daemon, run eval $(minikube docker-env -u))**

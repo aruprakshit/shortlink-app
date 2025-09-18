@@ -22,6 +22,9 @@ FROM nginx:1.23-alpine
 # Copy the built static files from the build stage
 COPY --from=build /app/dist /usr/share/nginx/html
 
+# Copy the custom nginx configuration
+COPY nginx.conf /etc/nginx/conf.d/default.conf
+
 # When the container starts, nginx will serve the files
 # The default nginx config is sufficient for a basic SPA
 EXPOSE 80

@@ -41,6 +41,14 @@ apply_manifest() {
     fi
 }
 
+# Function to delete existing Ingress resources
+delete_existing_ingress() {
+    echo "🗑️ Deleting existing Ingress resources to avoid conflicts..."
+    # The --ignore-not-found flag prevents errors if the resources don't exist
+    kubectl delete ingress shortlink-ingress shortlink-ingress-frontend shortlink-ingress-backend -n shortlink --ignore-not-found=true
+    echo "✅ Old Ingress resources cleared"
+}
+
 # Main deployment function
 deploy() {
     echo ""
@@ -56,13 +64,51 @@ deploy() {
     
     echo ""
     echo "3️⃣ Deploying the backend..."
-    apply_manifest "kubernetes/backend-deployment.yaml" "Backend deployment"
+
+    # Generate a unique timestamped tag for the images
+    IMAGE_TAG="v1.0.1-$(date +%Y%m%d%H%M%S)"
+    echo "Using image tag: ${IMAGE_TAG}"
+
+    # Delete old backend deployment to ensure new image is used
+    echo "🗑️ Deleting existing backend deployment to ensure new image is used..."
+    kubectl delete deployment backend-deployment -n shortlink --ignore-not-found=true
+
+    # Build and load backend Docker image into Minikube
+    echo "Building backend Docker image..."
+    docker build --no-cache -t shortlink-backend:"${IMAGE_TAG}" ./backend
+
+    echo "Loading new backend image into Minikube..."
+    minikube image load shortlink-backend:"${IMAGE_TAG}"
+
+    # Dynamically update backend-deployment.yaml with the new image tag
+    cp kubernetes/backend-deployment.yaml kubernetes/backend-deployment.tmp.yaml
+    sed -i "s|shortlink-backend:PLACEHOLDER_IMAGE_TAG|shortlink-backend:${IMAGE_TAG}|" kubernetes/backend-deployment.tmp.yaml
+    apply_manifest "kubernetes/backend-deployment.tmp.yaml" "Backend deployment"
+    rm kubernetes/backend-deployment.tmp.yaml
     apply_manifest "kubernetes/backend-service.yaml" "Backend service"
     
     echo ""
+    echo "Building frontend Docker image..."
+    docker build --no-cache -t shortlink-frontend:"${IMAGE_TAG}" ./frontend
+
+    echo "Loading new frontend image into Minikube..."
+    minikube image load shortlink-frontend:"${IMAGE_TAG}"
+
+    # Delete old frontend deployment to ensure new image is used
+    echo "🗑️ Deleting existing frontend deployment to ensure new image is used..."
+    kubectl delete deployment frontend-deployment -n shortlink --ignore-not-found=true
+
+    # Dynamically update frontend-deployment.yaml with the new image tag
+    cp kubernetes/frontend-deployment.yaml kubernetes/frontend-deployment.tmp.yaml
+    sed -i "s|shortlink-frontend:PLACEHOLDER_IMAGE_TAG|shortlink-frontend:${IMAGE_TAG}|" kubernetes/frontend-deployment.tmp.yaml
     echo "4️⃣ Deploying the frontend and exposing the app..."
-    apply_manifest "kubernetes/frontend-deployment.yaml" "Frontend deployment"
+    apply_manifest "kubernetes/frontend-deployment.tmp.yaml" "Frontend deployment"
+    rm kubernetes/frontend-deployment.tmp.yaml
     apply_manifest "kubernetes/frontend-service.yaml" "Frontend service"
+    
+    # Delete old Ingress resources before applying the new ones
+    delete_existing_ingress
+    
     apply_manifest "kubernetes/ingress.yaml" "Ingress"
     
     echo ""

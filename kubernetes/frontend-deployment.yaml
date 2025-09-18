@@ -16,7 +16,7 @@ spec:
       containers:
       - name: frontend
         # IMPORTANT: Replace this with your actual image name before deploying
-        image: shortlink-frontend:latest
-        imagePullPolicy: IfNotPresent # Use a local image if available
+        image: shortlink-frontend:PLACEHOLDER_IMAGE_TAG
+        imagePullPolicy: IfNotPresent # Tells K8s to use a local image if available
         ports:
         - containerPort: 80
